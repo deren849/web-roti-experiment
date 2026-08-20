@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artisan Bakery - Official Website</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;1,400;1,600&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <!--link menuju file css-->
+    <link rel="stylesheet" href="style.css">
+
+    <!--link menuju file js-->
+    <script src="javascript.js" defer></script>
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <nav id="navbar" class="nav-transparent">
+        <div class="logo">BAKERY.</div>
+        
+        <!-- Hamburger Menu Button -->
+        <div class="hamburger" onclick="toggleMobileMenu()">
+            <i class="fas fa-bars"></i>
+        </div>
+
+        <ul class="nav-links">
+            <li><a onclick="switchPage('home')" id="nav-home" class="active">Home</a></li>
+            <li><a onclick="switchPage('menu')" id="nav-menu">Menu Lengkap</a></li>
+            <li><a onclick="switchPage('about')" id="nav-about">Tentang Kami</a></li>
+        </ul>
+        <div class="nav-icons">
+            <a onclick="goToSearch()" title="Cari Roti"><i class="fas fa-search"></i></a>
+            <div class="cart-icon-wrap" onclick="toggleCart()">
+                <i class="fas fa-shopping-bag"></i>
+                <div class="cart-count" id="cartCount">0</div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- SIDEBAR KERANJANG -->
+    <div class="overlay" id="cartOverlay" onclick="toggleCart()"></div>
+    <div class="cart-sidebar" id="cartSidebar">
+        <div class="cart-header"><h3>Keranjang Saya</h3><span class="cart-close" onclick="toggleCart()">&times;</span></div>
+        <div class="cart-items" id="cartItems"><p style="text-align: center; color: #999; margin-top: 50px;">Keranjang masih kosong</p></div>
+        <div class="cart-footer">
+            <div class="cart-total"><span>Total:</span><span id="cartTotal">Rp 0</span></div>
+            <div class="payment-options">
+                <button class="btn-checkout btn-paypal" onclick="processPayment('PayPal')"><i class="fab fa-paypal"></i> Checkout via PayPal</button>
+                <button class="btn-checkout btn-cod" onclick="processPayment('Bayar di Tempat (COD)')"><i class="fas fa-money-bill-wave"></i> Bayar di Tempat</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FLOATING BUTTONS -->
+    <div class="fab-container">
+        <button class="fab-add" onclick="openAddModal()" title="Tambah Menu Baru"><i class="fas fa-bread-slice"></i><i class="fas fa-plus"></i></button>
+        <button class="fab-settings" id="btnSettings" onclick="toggleEditMode()" title="Mode Pengaturan"><i class="fas fa-cog"></i></button>
+    </div>
+
+    <!-- MODAL 1: DETAIL POPUP & COMMENTS -->
+    <div id="productModal" class="modal" onclick="closeModal(event, 'productModal')">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModalBtn('productModal')">&times;</span>
+            <div class="modal-img"><img id="modalImg" src="" alt="Detail Produk"></div>
+            <div class="modal-info">
+                <h2 id="modalTitle" class="modal-title">Nama Produk</h2>
+                <span id="modalPrice" class="modal-price">Rp 0</span>
+                
+                <div class="social-action-bar">
+                    <div class="like-btn" id="modalLikeBtn" onclick="toggleLikeFromModal()">
+                        <i class="far fa-heart" id="modalLikeIcon"></i> <span id="modalLikeCount">0</span>
+                    </div>
+                    <!-- Tombol ini membuka setup order -->
+                    <button class="modal-btn" onclick="openOrderSetup()">PESAN SEKARANG</button>
+                </div>
+
+                <p id="modalDesc" class="modal-desc">Deskripsi.</p>
+
+                <!-- Komentar Section -->
+                <div class="comment-section">
+                    <h4>Komentar (<span id="commentCount">0</span>)</h4>
+                    <div class="comment-list" id="commentList">
+                        <!-- List komentar via JS -->
+                    </div>
+                    <div class="comment-form">
+                        <input type="text" id="newComment" class="comment-input" placeholder="Tulis komentar...">
+                        <button class="btn-comment" onclick="submitComment()"><i class="fas fa-paper-plane"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: ORDER SETUP (Quantity & Notes) -->
+    <div id="orderSetupModal" class="modal" onclick="closeModal(event, 'orderSetupModal')">
+        <div class="modal-content small">
+            <span class="close-btn" onclick="closeModalBtn('orderSetupModal')">&times;</span>
+            <h3 style="color: var(--primary-color); text-align: center; margin-bottom: 20px;">Atur Pesanan</h3>
+            
+            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+                <img id="setupImg" src="" style="width: 80px; height: 80px; border-radius: 10px; object-fit: cover;">
+                <div>
+                    <h4 id="setupName" style="font-size: 1.1rem; margin-bottom: 5px;">Nama Roti</h4>
+                    <span id="setupPrice" style="color: var(--gold-color); font-weight: bold;">Rp 0</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Jumlah Roti</label>
+                <div class="quantity-control">
+                    <button class="btn-qty" onclick="changeQty(-1)">-</button>
+                    <span id="qtyVal" class="qty-val">1</span>
+                    <button class="btn-qty" onclick="changeQty(1)">+</button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Catatan Pesanan (Opsional)</label>
+                <textarea id="orderNote" class="note-input" placeholder="Contoh: Jangan terlalu manis, kasih lilin, dll..."></textarea>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; margin-top: 10px; font-weight: bold; font-size: 1.1rem; color: var(--primary-color);">
+                <span>Total:</span>
+                <span id="setupTotal">Rp 0</span>
+            </div>
+
+            <button class="btn-add" style="margin-top: 20px;" onclick="confirmAddToCart()">MASUKKAN KERANJANG</button>
+        </div>
+    </div>
+
+    <!-- MODAL 3: TAMBAH/EDIT MENU -->
+    <div id="addModal" class="modal" onclick="closeModal(event, 'addModal')">
+        <div class="modal-content small">
+            <span class="close-btn" onclick="closeModalBtn('addModal')">&times;</span>
+            <h2 id="formTitle" style="text-align: center; margin-bottom: 20px; color: var(--primary-color);">Tambah Menu Baru</h2>
+            <input type="hidden" id="editType" value="product">
+            <input type="hidden" id="editId">
+            
+            <div class="form-group"><label>Judul / Nama</label><input type="text" id="newName" placeholder="Nama Roti"></div>
+            
+            <div class="form-group" id="priceGroup"><label>Harga (Rp)</label><input type="number" id="newPrice" placeholder="35000"></div>
+            
+            <div class="form-group">
+                <label>Link Gambar</label>
+                <input type="file" id="newImgFile" accept="image/*" style="margin-bottom: 10px;">
+                <input type="text" id="newImgUrl" placeholder="Tempel URL gambar di sini">
+            </div>
+            
+            <div class="form-group"><label>Deskripsi</label><textarea id="newDesc" placeholder="Deskripsi..."></textarea></div>
+            
+            <!-- Checkbox Best Seller -->
+            <div class="checkbox-group" id="bestSellerGroup">
+                <input type="checkbox" id="isBestSeller">
+                <label for="isBestSeller" style="margin:0; font-weight:normal;">Jadikan Produk Terlaris (Tampil di Beranda)</label>
+            </div>
+
+            <button class="btn-add" style="margin-top: 20px;" onclick="saveDataEntry()">SIMPAN</button>
+        </div>
+    </div>
+
+    <!-- MODAL 4: DELETE CONFIRMATION -->
+    <div id="deleteModal" class="modal" onclick="closeModal(event, 'deleteModal')">
+        <div class="modal-content small delete-content">
+            <span class="close-btn" onclick="closeModalBtn('deleteModal')">&times;</span>
+            <h3 style="color: var(--danger-color);">Hapus Menu Ini?</h3>
+            <img id="deleteImg" src="" class="delete-img">
+            <p style="color: #666;">Anda yakin ingin menghapus <strong><span id="deleteName"></span></strong>?</p>
+            <input type="hidden" id="deleteId">
+            <input type="hidden" id="deleteType">
+            <button class="btn-confirm-delete" onclick="confirmDelete()">YA, HAPUS</button>
+        </div>
+    </div>
+
+    <!-- PAGES -->
+    <div id="home-page" class="page-section active">
+        <section class="hero" id="hero-section">
+            <div class="hero-content">
+                <h1>Freshly Baked for You</h1>
+                <p>Rasakan kelembutan roti artisan yang dibuat dengan bahan alami dan cinta setiap paginya.</p>
+                <a onclick="switchPage('menu')" class="btn-hero">Lihat Semua Menu</a>
+                <button class="btn-bg-edit hero-edit-btn" onclick="changeHeaderBg('home')"><i class="fas fa-camera"></i> Ganti Background</button>
+            </div>
+        </section>
+        <section class="section-container">
+            <h2 style="font-size: 2.5rem; margin-bottom: 10px;">Produk Terlaris</h2>
+            <p style="color: var(--gold-color); margin-bottom: 40px; text-transform: uppercase; letter-spacing: 2px;">Pilihan Pelanggan</p>
+            <div class="product-grid" id="featured-grid"></div>
+        </section>
+    </div>
+
+    <div id="menu-page" class="page-section">
+        <header class="page-header" id="menu-header">
+            <div class="page-header-content">
+                <h1>Daftar Menu Kami</h1>
+                <p>Nikmati pilihan roti dan pastry terbaik yang kami sajikan fresh setiap hari.</p>
+                <button class="btn-bg-edit hero-edit-btn" onclick="changeHeaderBg('menu')"><i class="fas fa-camera"></i> Ganti Background</button>
+            </div>
+        </header>
+        
+        <!-- SEARCH & FILTER -->
+        <div class="menu-toolbar">
+            <div class="search-container">
+                <input type="text" id="searchInput" class="search-input" placeholder="Cari roti favoritmu..." onkeyup="searchProducts()">
+                <button class="search-btn"><i class="fas fa-search"></i></button>
+            </div>
+            <div class="filter-buttons">
+                <button class="btn-filter active" onclick="filterProducts('all', this)">Semua</button>
+                <button class="btn-filter" onclick="filterProducts('newest', this)">Terbaru</button>
+                <button class="btn-filter" onclick="filterProducts('popular', this)">Populer</button>
+            </div>
+        </div>
+
+        <section class="section-container" style="padding-top: 0;">
+            <div class="product-grid" id="menu-grid"></div>
+        </section>
+    </div>
+
+    <div id="about-page" class="page-section">
+        <header class="page-header" id="about-header">
+            <div class="page-header-content">
+                <h1>Cerita Kami</h1>
+                <p>Lebih dari sekadar tepung dan air, ini tentang rasa dan cinta.</p>
+                <button class="btn-bg-edit hero-edit-btn" onclick="changeHeaderBg('about')"><i class="fas fa-camera"></i> Ganti Background</button>
+            </div>
+        </header>
+        <article class="about-article" id="about-content"></article>
+        <div class="about-article">
+            <button class="btn-add-article hero-edit-btn" onclick="openAddArticleModal()" style="display:none;">+ Tambah Artikel Baru</button>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="footer-content">
+            <div class="logo" style="color:white; margin-bottom:20px; font-size: 2.5rem;">BAKERY.</div>
+            <div class="footer-info">
+                <p><i class="fas fa-map-marker-alt"></i> Jl. Mawar Indah No. 88, Kemang, Jakarta Selatan</p>
+                <p><i class="fas fa-phone-alt"></i> +62 812-000-0000 (WhatsApp Order)</p>
+                <p><i class="fas fa-envelope"></i> hello@artisanbakery.id test aja</p>
+                <p><i class="fas fa-clock"></i> Senin - Minggu: 07:00 - 21:00 WIB</p>
+            </div>
+            <div class="social-icons">
+                <a href="#"><i class="fab fa-instagram"></i></a><a href="#"><i class="fab fa-facebook-f"></i></a><a href="#"><i class="fab fa-whatsapp"></i></a>
+            </div>
+            <div class="footer-copyright">&copy; 2024 Artisan Bakery. Dibuat dengan Sepenuh Hati.</div>
+        </div>
+    </footer>
